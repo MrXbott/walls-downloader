@@ -85,6 +85,10 @@ async def download_wallpapers_for_month(year: int, month: int, resolution: str ,
         if 'wallpaper' in href and (not resolution or resolution in href):
             links.append(href)
             typer.echo(f'Wall url found: {href}')
+    
+    if not links:
+        typer.echo(f'No wallpapers found for {month:02d}.{year} with resolution "{resolution}".', err=True)
+        return 
 
     # make dir based on month
     month_dir = os.path.join(save_to, str(year), f'{month:02d}')
