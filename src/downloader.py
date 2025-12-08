@@ -5,6 +5,7 @@ import typer
 from bs4 import BeautifulSoup
 from enum import Enum
 import aiofiles
+from pathlib import Path
 
 class Month(Enum):
     january = 1
@@ -20,8 +21,6 @@ class Month(Enum):
     november = 11
     december = 12
 
-
-BASE_DIR = 'SmashingWallpapers'
 
 def make_url(year: int, month:int) -> str:
     month_name = Month(month).name 
@@ -73,7 +72,7 @@ async def download_image(client: httpx.AsyncClient, url: str, save_path: str):
         typer.echo(f'Some error while downloading {url} - {str(e)}', err=True)
         
 
-async def download_wallpapers_for_month(year: int, month: int, resolution: str = None):
+async def download_wallpapers_for_month(year: int, month: int, resolution: str , save_to: Path):
     url = make_url(year, month)
 
     html = await fetch_html(url)
@@ -88,16 +87,16 @@ async def download_wallpapers_for_month(year: int, month: int, resolution: str =
             typer.echo(f'Wall url found: {href}')
 
     # make dir based on month
-    month_dir = os.path.join(BASE_DIR, str(year), f'{month:02d}')
+    month_dir = os.path.join(save_to, str(year), f'{month:02d}')
     os.makedirs(month_dir, exist_ok=True)
 
     async with httpx.AsyncClient(timeout=60, follow_redirects=True) as client:
         tasks = [download_image(client, link, os.path.join(month_dir, os.path.basename(link))) for link in links]
         await asyncio.gather(*tasks)
 
-async def download_wallpapers_for_year(year: int, resolution: str = None):
+async def download_wallpapers_for_year(year: int, resolution: str, save_to: Path):
     for month in range(1, 13):
         try:
-            await download_wallpapers_for_month(year, month, resolution)
+            await download_wallpapers_for_month(year, month, resolution, save_to)
         except typer.Exit:
             typer.echo(f'Error: page not found for {month}/{year} ', err=True)
