@@ -2,8 +2,8 @@ import asyncio
 import typer
 from pathlib import Path
 
-from utils import validate_month, validate_year, validate_resolution
-from downloader import download_wallpapers_for_month, download_wallpapers_for_year
+from downloader.validate import validate_month, validate_year, validate_resolution
+from downloader.download import download_wallpapers_for_month, download_wallpapers_for_year
 
 
 app = typer.Typer()
@@ -22,8 +22,6 @@ def download(year: int = typer.Option(None, help='The year for which you need to
                                           )
              ):
     
-    save_to.mkdir(parents=True, exist_ok=True)
-
     if not year:
         typer.echo('Error: You must specify the year with --year')
         raise typer.Exit(code=1)
